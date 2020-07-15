@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:with="title='分类管理',active='category'">
+<header th:replace="back/header::headerFragment(${title},${active})"></header>
+<head>
+    <meta th:name="_csrf" th:content="${_csrf.token}"/>
+    <!-- 默认的header name是X-CSRF-TOKEN -->
+    <meta th:name="_csrf_header" th:content="${_csrf.headerName}"/>
+</head>
+<script th:src="@{/assets/js/jquery.min.js}"></script>
+<body class="fixed-left">
+<div id="wrapper">
+    <div th:replace="back/header::header-body"></div>
+    <div class="content-page">
+        <div class="content">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-8">
+                        <h4 class="page-title">分类管理</h4>
+                    </div>
+                    <div class="col-sm-4">
+                        <div class="input-group">
+                            <input type="text" class="form-control" aria-label="..." placeholder="请输入分类标题">
+                            <div class="input-group-btn">
+                                <button type="button" class="btn btn-primary addCategory">添加</button>
+                                <!--                                <button class="btn btn-primary btn-lg" data-toggle="modal" data-target="#myModal">-->
+                                <!--                                    打开遮罩层-->
+                                <!--                                </button>-->
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-md-12">
+                        <table class="table table-striped table-bordered">
+                            <thead>
+                            <tr>
+                                <th width="60%">分类标题</th>
+                                <th width="15%">创建时间</th>
+                                <!--                                <th>浏览量</th>-->
+                                <!--                                <th>所属分类</th>-->
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <th:block th:each="categorys : ${categorys.list}">
+                                <tr th:id="${categorys.id}">
+                                    <td>
+                                        <a th:href="@{'/article/'+${categorys.id}}" th:text="${categorys.title}"
+                                           target="_blank"></a>
+                                    </td>
+                                    <td>
+                                        <th:block th:text="${commons.dateFormat(categorys.createTime)}"/>
+                                    </td>
+                                    <!--                                    <td><th:block th:text="${article.hits}"/></td>-->
+                                    <!--                                    <td><th:block th:text="${article.categories}"/></td>-->
+                                    <td>
+                                        <!--                                        th:href="@{'/admin/category/'+${categorys.id}}"-->
+                                        <a class="btn btn-primary btn-sm waves-effect waves-light m-b-5"
+                                           th:onclick="'getId('+${categorys.id}+');'"
+                                           data-toggle="modal" data-target="#myModal">
+                                            <i class="fa fa-edit"></i> <span>编辑</span>
+                                        </a>
+
+
+                                        <a href="javascript:void(0)" th:onclick="'delArticle('+${categorys.id}+');'"
+                                           class="btn btn-danger btn-sm waves-effect waves-light m-b-5">
+                                            <i class="fa fa-trash-o"></i> <span>删除</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </th:block>
+
+                            </tbody>
+                        </table>
+                        <div th:replace="comm/paging :: pageAdminNav(${categorys})"></div>
+                    </div>
+                </div>
+                <div th:replace="back/footer :: footer-content"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div th:replace="back/footer :: footer"></div>
+<!-- 模态框（Modal） -->
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+     aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"
+                        aria-hidden="true">
+                    ×
+                </button>
+                <h4 class="modal-title" id="myModalLabel">
+                    修改分类
+                </h4>
+            </div>
+            <div class="modal-body">
+                <input type="text" class="form-control updateTitle" aria-label="..."
+                       placeholder="请输入修改的分类标题">
+            </div>
+            <div class="modal-footer">
+                <br/>
+                <button type="button" class="btn btn-default"
+                        data-dismiss="modal">关闭
+                </button>
+                <button type="button" class="btn btn-primary updateCategory">
+                    提交更改
+                </button>
+            </div>
+        </div>
+        <!-- /.modal-content -->
+    </div>
+    <!-- /.modal -->
+</div>
+<script type="text/javascript">
+    function delArticle(id) {
+        // 获取<meta>标签中封装的_csrf信息
+        var token = $("meta[name='_csrf']").attr("content");
+        var header = $("meta[name='_csrf_header']").attr("content");
+        if (confirm('确定删除该分类吗?')) {
+            $.ajax({
+                type: 'post',
+                url: '/admin/category/deleteCategory',
+                data: {id: id},
+                dataType: 'json',
+                beforeSend: function (xhr) {
+                    xhr.setRequestHeader(header, token);
+                },
+                success: function (result) {
+                    if (result && result.success) {
+                        window.alert("分类删除成功");
+                        window.location.reload();
+                    } else {
+                        window.alert(result.msg || '分类删除失败')
+                    }
+                }
+            });
+        }
+    }
+
+    let categoryId = 0;
+
+    function getId(id) {
+        categoryId = id;
+    }
+
+    $(() => {
+
+        $(".addCategory").click(function () {
+            // console.log($(this).parent().prev().val())
+            let categoryTitle = $(this).parent().prev().val();
+            if (categoryTitle == '' || categoryTitle == null) {
+                alert("请输入标题!");
+                return false;
+            }
+            if (categoryTitle != '' || categoryTitle != null) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/admin/category/addCategory',
+                    data: {title: categoryTitle},
+                    success: function (result) {
+                        if (result && result.success) {
+                            window.alert("分类添加成功");
+                            window.location.reload();
+                        } else {
+                            window.alert(result.msg || '分类添加失败')
+                        }
+                    }
+                })
+            }
+        });
+
+        $(".updateCategory").click(function () {
+            console.log($(".updateTitle").val());
+            let categoryTitle = $(".updateTitle").val();
+            if (categoryTitle == '' || categoryTitle == null) {
+                alert("请输入标题!");
+                return false;
+            }
+            if (categoryTitle != '' || categoryTitle != null) {
+                $.ajax({
+                    type: 'GET',
+                    url: '/admin/category/updateCategory',
+                    data: {
+                        id: categoryId,
+                        title: categoryTitle
+                    },
+                    success: function (result) {
+                        if (result && result.success) {
+                            window.alert("分类更新成功");
+                            window.location.reload();
+                        } else {
+                            window.alert(result.msg || '分类更新失败')
+                        }
+                    }
+                })
+            }
+        })
+    })
+</script>
+</body>
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>博客后台</title>
+
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <link rel="shortcut icon" th:href="@{/user/img/bloglogo.jpg}"/>
+
+    <script th:src="@{/assets/js/jquery.min.js}"></script>
+    <script th:src="@{/assets/js/amazeui.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/assets/css/amazeui.min.css}"/>
+    <link rel="stylesheet" th:href="@{/assets/css/app.css}"/>
+    <style>
+        .tishi {
+            color: red;
+            font-size: 12px;
+        }
+        .tishiInput {
+            border: 1px red solid!important;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="log">
+    <div class="am-g">
+        <div class="am-u-lg-3 am-u-md-6 am-u-sm-8 am-u-sm-centered log-content">
+            <h1 class="log-title am-animation-slide-top" style="color: black;">~注册账户~</h1>
+            <br>
+            <div th:if="${regerror}" style="color: red" th:text="${regerror}">用户名或密码错误!</div>
+            <form class="am-form" id="loginForm" th:action="@{/user/useradd}" method="post">
+
+                <div class="am-input-group am-radius am-animation-slide-left">
+                    <input type="text" class="am-radius" th:placeholder="#{login.username}" name="username" id="username"/>
+                    <span class="am-input-group-label log-icon am-radius">
+                        <i class="am-icon-user am-icon-sm am-icon-fw"></i>
+                    </span>
+                </div>
+                <span class="tishi">账号不能为空!</span>
+                <br>
+                <div class="am-input-group am-animation-slide-left log-animation-delay">
+                    <input type="password" class="am-form-field am-radius log-input" th:placeholder="#{login.password}" name="password" id="password" />
+                    <span class="am-input-group-label log-icon am-radius">
+                        <i class="am-icon-lock am-icon-sm am-icon-fw"></i>
+                    </span>
+                </div>
+                <span class="tishi">密码不能为空!</span>
+                <div style="padding-top: 10px;">
+                    <input type="submit" th:value="注册"
+                           class="am-btn am-btn-primary am-btn-block am-btn-lg am-radius am-animation-slide-bottom log-animation-delay" id="buttonTosubmit" />
+                </div>
+
+            </form>
+            <script>
+                /* 添加表单校验 */
+                $(() => {
+                    $(".tishi").hide();
+                    function Show(idValue) {
+                        $(idValue).parent().addClass("tishiInput");
+                        $(idValue).parent().next().show();
+                    }
+                    function Hide(idValue) {
+                        $(idValue).parent().removeClass("tishiInput");
+                        $(idValue).parent().next().hide();
+                    }
+                    //账号input判断
+                    $("#username").blur(function() {
+                        if($(this).val() == null || $(this).val() == '') {
+                            Show("#username");
+                        } else {
+                            Hide("#username");
+                        }
+                    });
+                    //密码input判断
+                    $("#password").blur(function() {
+                        if($(this).val() == null || $(this).val() == '') {
+                            Show("#password");
+                        } else {
+                            Hide("#password");
+                        }
+                    });
+                    //表单提交判断
+                    $("#buttonTosubmit").click(function() {
+                        let username = $("#username").val() == null || $("#username").val() == '';
+                        let password = $("#password").val() == null || $("#password").val() == '';
+                        if(username && password) {
+                            Show("#username");
+                            Show("#password");
+                            return false;
+                        }
+                        if(username) {
+                            Show("#username");
+                            return false;
+                        }
+                        if(password) {
+                            Show("#password");
+                            return false;
+                        }
+                        if(!username && !password) {
+                            Hide("#username");
+                            Hide("#password");
+                        }
+                    })
+                })
+            </script>
+        </div>
+    </div>
+
+    <footer class="log-footer">
+        <p style="margin: 30px; color: #2E2D3C"><time class="comment-time" th:text="${#dates.format(new java.util.Date().getTime(), 'yyyy')}"></time> &copy; Powered By <a style="color: #0e90d2" rel="nofollow">CrazyStone</a></p>
+    </footer>
+</div>
+</body>
+</html>
